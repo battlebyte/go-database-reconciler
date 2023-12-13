@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/kong/go-database-reconciler/pkg/cprint"
 	"github.com/kong/go-database-reconciler/pkg/crud"
 	"github.com/kong/go-database-reconciler/pkg/konnect"
 	"github.com/kong/go-database-reconciler/pkg/state"
@@ -78,10 +77,6 @@ type Syncer struct {
 	silenceWarnings bool
 	stageDelaySec   int
 
-	createPrintln func(a ...interface{})
-	updatePrintln func(a ...interface{})
-	deletePrintln func(a ...interface{})
-
 	kongClient    *kong.Client
 	konnectClient *konnect.Client
 
@@ -105,10 +100,6 @@ type SyncerOpts struct {
 	NoMaskValues bool
 
 	IsKonnect bool
-
-	CreatePrintln func(a ...interface{})
-	UpdatePrintln func(a ...interface{})
-	DeletePrintln func(a ...interface{})
 }
 
 // NewSyncer constructs a Syncer.
@@ -125,23 +116,7 @@ func NewSyncer(opts SyncerOpts) (*Syncer, error) {
 
 		noMaskValues: opts.NoMaskValues,
 
-		// TODO TRC technically we allow you to _bring your own output formatter_ but I doubt this is used in practice. I
-		// don't see anything in KIC or deck that sets this opt. we would need a technically breaking change to the inputs
-		// though
-		createPrintln: opts.CreatePrintln,
-		updatePrintln: opts.UpdatePrintln,
-		deletePrintln: opts.DeletePrintln,
-		isKonnect:     opts.IsKonnect,
-	}
-
-	if s.createPrintln == nil {
-		s.createPrintln = cprint.CreatePrintln
-	}
-	if s.updatePrintln == nil {
-		s.updatePrintln = cprint.UpdatePrintln
-	}
-	if s.deletePrintln == nil {
-		s.deletePrintln = cprint.DeletePrintln
+		isKonnect: opts.IsKonnect,
 	}
 
 	err := s.init()
